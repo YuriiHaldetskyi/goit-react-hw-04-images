@@ -17,22 +17,20 @@ export const ImageGallery = ({ topic }) => {
     if (topic === '') {
       return;
     }
-    if (stateTopic !== topic) {
-      setStatus('pending');
-      fetchTopic(topic, page)
-        .then(topic => {
-          if (topic.hits.length === 0) {
-            setStatus('rejected');
-            return;
-          }
-          setTopic([...stateTopic, ...topic.hits]);
-          setStatus('resolved');
-        })
-        .catch(error => {
-          setError(error);
+    setStatus('pending');
+    fetchTopic(topic, page)
+      .then(topic => {
+        if (topic.hits.length === 0) {
           setStatus('rejected');
-        });
-    }
+          return;
+        }
+        setTopic(prevTopic => [...prevTopic, ...topic.hits]);
+        setStatus('resolved');
+      })
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      });
   }, [topic, page]);
 
   const loadMore = () => {
@@ -42,9 +40,7 @@ export const ImageGallery = ({ topic }) => {
   if (status === 'idle') {
     return <h1>Input topic please</h1>;
   }
-  if (status === 'pending') {
-    return <Loader />;
-  }
+
   if (status === 'rejected') {
     return <h2>{error ? error.message : `Sorry i dont find ${topic}`}</h2>;
   }
@@ -60,5 +56,8 @@ export const ImageGallery = ({ topic }) => {
         {stateTopic.length < 12 ? '' : <Button onClick={() => loadMore()} />}
       </>
     );
+  }
+  if (status === 'pending') {
+    return <Loader />;
   }
 };
