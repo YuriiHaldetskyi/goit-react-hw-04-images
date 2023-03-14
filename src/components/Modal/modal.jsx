@@ -1,46 +1,39 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { ModalWindow, BackDrop, ButtonClose } from './modal.styled';
 import { createPortal } from 'react-dom';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 
-export class Modal extends Component {
-  static propTypes = {
-    onClose: PropTypes.func.isRequired,
-  };
+export const Modal = ({ children, onClose }) => {
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
 
-  componentDidMount() {
-    document.addEventListener('keydown', this.handleKeyDown);
-  }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  });
 
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  handleKeyDown = e => {
+  const handleKeyDown = e => {
     if (e.key === 'Escape') {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  handleOverlayClick = e => {
+  const handleOverlayClick = e => {
     if (e.currentTarget !== e.target) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    return createPortal(
-      <BackDrop onClick={this.handleOverlayClick}>
-        <ModalWindow>
-          <ButtonClose type="button" onClick={this.props.onClose}>
-            <AiOutlineCloseCircle size="35" />
-          </ButtonClose>
-
-          {this.props.children}
-        </ModalWindow>
-      </BackDrop>,
-      document.getElementById('modal-root')
-    );
-  }
-}
+  return createPortal(
+    <BackDrop onClick={handleOverlayClick}>
+      <ModalWindow>
+        <ButtonClose type="button" onClick={onClose}>
+          <AiOutlineCloseCircle size="35" />
+        </ButtonClose>
+        {children}
+      </ModalWindow>
+    </BackDrop>,
+    document.getElementById('modal-root')
+  );
+};
